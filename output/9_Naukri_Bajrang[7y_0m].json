@@ -1,0 +1,81 @@
+{
+    "name": "BAJRANG CHIKINE",
+    "email": "bajrang2411995@gmail.com",
+    "phone": "+91 86399 72040",
+    "skills": [
+        "Power BI Desktop",
+        "Power BI Service",
+        "SQL Server",
+        "Fabric",
+        "Snowflake",
+        "MS Excel",
+        "Fabric Lakehouse",
+        "Warehouse",
+        "Dataflow Gen2",
+        "Power Query",
+        "Power Pivot",
+        "DAX",
+        "Row level security",
+        "On-Premise data Gateway",
+        "Bookmarks",
+        "Parameters",
+        "Stakeholder Management",
+        "Project Management",
+        "Power BI Development",
+        "Software Development Lifecycle",
+        "Process Improvement",
+        "Business Intelligence"
+    ],
+    "experience": [
+        {
+            "job_title": "Senior Software Engineer",
+            "company": "Yash Technologies",
+            "start_date": "Sep 2022",
+            "end_date": "Present",
+            "responsibilities": [
+                "Designed and delivered interactive Power BI dashboards (Scorecards, SA Leadership, GTM) for global regions (Americas, APD, EAME), enabling leadership teams to track performance KPIs and business targets.",
+                "Performed advanced data preparation and transformation using Power Query, creating reusable tables and logic to meet diverse reporting needs.",
+                "Developed and optimized data models with accurate relationships, cardinality, and filter directions to ensure scalability, accuracy, and report performance.",
+                "Built dynamic DAX measures and functionalities to deliver client-specific insights and enhance the report.",
+                "Created KPI-driven reports for the resource industry, comparing current year performance against targets and historical data (last 3 years) to drive data-backed decision making.",
+                "Collaborated with client and ETL teams to support defect resolution, enhancements, and seamless migration of objects across Dev, PreProd, and Production environments.",
+                "Responsible for enhancements & Developments using Power BI Desktop and Published reports to Power BI Service workspaces, data refresh schedules, and user access.",
+                "Handled production report support, including defect resolution, performance tuning, and troubleshooting refresh failures.",
+                "Supported deployments across Dev, UAT, and Prod environments, ensuring smooth transitions and managed Power BI App deployments and workspace governance."
+            ]
+        },
+        {
+            "job_title": "Software Engineer",
+            "company": "Experis IT",
+            "start_date": "Jun 2021",
+            "end_date": "Sep 2022",
+            "responsibilities": [
+                "Worked in multiple projects using Power BI, Fabric, SQL Server, Snowflake and MS Excel.",
+                "Prepare Daily, Weekly, and Monthly/Quarterly Reports by coordinating the information from various applications.",
+                "Experience in connecting with multiple data sources such as Fabric Lakehouse, Warehouse, SQL Server and Excel with Power BI to build visuals.",
+                "Worked on performing the ETL activities in Microsoft Fabric Dataflow Gen2, and Power Query.",
+                "Experience in doing Data Modelling in Power Pivot."
+            ]
+        },
+        {
+            "job_title": "Engineer",
+            "company": "DesignTech Systems",
+            "start_date": "Feb 2018",
+            "end_date": "Dec 2020",
+            "responsibilities": [
+                "Good experience at creating different visualizations using default charts and custom charts based on business requirements using Power BI desktop.",
+                "Worked on enhancing the Data Model by creating new columns, new measure and new tables using DAX.",
+                "Creating Row level security in Power BI Desktop and integration with Power BI Service Portal and Gateway services.",
+                "Good experience in publishing the Reports to Power BI Service and setting up the necessary connections.",
+                "Good experience in Creating the Dashboards using Multiple Reports."
+            ]
+        }
+    ],
+    "education": [
+        {
+            "degree": "Bachelor of Technology (B. Tech)",
+            "institution": "JNTUH",
+            "graduation_year": "2017"
+        }
+    ]
+}

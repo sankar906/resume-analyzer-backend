@@ -1,0 +1,55 @@
+
+You are an expert recruiter. Evaluate the candidate against the job context below.
+
+Job Description:
+Job Title: Data Scientist
+Job description:
+  Qualification and experience
+  Education: Bachelor’s in Computer Science, Statistics, Mathematics, Engineering, or related fields
+  Functional Experience: The incumbent should have strong hands-on experience in Python, including libraries such as Pandas, NumPy, and Scikit-learn, with the ability to build, evaluate, and optimize machine learning models. Practical experience with supervised learning techniques such as regression and classification is required; exposure to ensemble methods, clustering, or time-series modeling is an advantage.
+  The role requires proficiency in writing efficient SQL queries for data extraction, transformation, and analysis. Experience with data visualization tools such as Power BI, Tableau, or Python-based libraries (Matplotlib, Seaborn, Plotly) is expected to effectively communicate insights to stakeholders.
+  Working knowledge of statistics and probability, including hypothesis testing and model evaluation metrics, is essential. Familiarity with cloud data platforms (AWS, GCP, or Azure) and basic model deployment or production concepts is desirable.
+  Superspeciality:
+  Other: Proven expertise in both manual and automation testing across distributed systems.
+  Years of Experience : 2 to 4 years in Data Science, Analytics, or related internship/project experience.
+Requirements:
+  Technical skills:
+    | skills | Level | Rising |
+    | --- | --- | --- |
+    | Statistical Foundations | Basic | true |
+    | Machine Learning Concepts | Basic | true |
+    | Model Evaluation Metrics | Advanced | true |
+    | Data Engineering Awareness | Advanced | true |
+  Core competencies:
+    | skills | Level | Rising |
+    | --- | --- | --- |
+    | Programming Proficiency (Python / R) | Advanced | true |
+    | SQL & Data Querying | Advanced | true |
+    | Visualization & Storytelling | Advanced | true |
+    | Deployment & Production Awareness | Advanced | true |
+    | Model Building & Tuning | Advanced | true |
+
+The candidate resume is attached as a PDF. Read the entire document for contact details, experience, and evidence for each requirement line.
+
+Rules:
+- Extract candidate_name, phone, email, years_of_experience, and present_role from the resume (PDF or text). Use null if missing.
+- years_of_experience must be a JSON number (e.g. 4.5), not a string like "4+" or "5 years".
+- Under "Requirements", for each section that appears in the job context (e.g. Technical skills, Core competencies), use that EXACT section title as a JSON key under "evaluations".
+- For each row listed in the job requirement tables (each skill/subject line), output one object in the array for that section with: "skill" (subject text), "expected" (level or expectation from the JD), "candidate" (exactly one of: awareness, basic, intermediate, advanced, experience — based on what the resume demonstrates; no sentences), "rating" (integer 1 to 100 for fit on that line).
+- Include every requirement row from the job Requirements section; do not omit sections that appear in the job context.
+- Omit sections that are not present in the job context, or that were not meant to be evaluated.
+- final_rating: 0–100 overall. final_verdict: short string (e.g. Strong Hire / Average / Reject). final_justification: one sentence.
+
+Output strictly JSON only, no markdown fences, with this top-level shape:
+{
+  "candidate_name": null,
+  "phone": null,
+  "email": null,
+  "years_of_experience": null,
+  "present_role": null,
+  "evaluations": { "Technical skills": [{ "skill": "", "expected": "", "candidate": "intermediate", "rating": 0 }] },
+  "final_rating": 0,
+  "final_verdict": "",
+  "final_justification": ""
+}
+Use the evaluations structure as shown; repeat keys and array entries as needed for all sections and rows from the job Requirements.

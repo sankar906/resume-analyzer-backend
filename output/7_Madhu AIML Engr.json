@@ -1,0 +1,108 @@
+{
+    "name": "MADHU SURISETTI",
+    "email": "madhuml1091@gmail.com",
+    "phone": "+918500911575",
+    "skills": [
+        "Python",
+        "C",
+        "ML&AI",
+        "Manual Testing",
+        "Gen AI",
+        "Agentic AI",
+        "RAG",
+        "Machine Learning",
+        "Deep learning",
+        "LLM",
+        "lang chain",
+        "lang grapg",
+        "NLP",
+        "Data analytics",
+        "Data mining",
+        "SQL",
+        "Open-CV",
+        "Tesseract-OCR",
+        "Tabula",
+        "Camelot",
+        "Seaborn",
+        "Matplotlib",
+        "unit-Testing",
+        "HTML",
+        "CSS",
+        "Django",
+        "Flask",
+        "Fast API",
+        "Streamlit",
+        "Azure Deployment",
+        "NumPy",
+        "Pandas",
+        "Scikit-Learn",
+        "MAT-LAB",
+        "Phidat",
+        "Vector DB",
+        "LangGraph"
+    ],
+    "experience": [
+        {
+            "job_title": "Python and ML/AI developer",
+            "company": "Capgemini",
+            "start_date": "2025/08/11",
+            "end_date": "Present",
+            "responsibilities": [
+                "Experienced in software development lifecycle - Requirement Analysis, Design, Development, Testing, Deployment and Production Support.",
+                "Good knowledge on major programming in C, Python, ML&AI, Manual Testing, Gen AI, Agentic AI, RAG.",
+                "Have experience in all phases of the project which includes Design, Development, Testing, Deployment and Support."
+            ]
+        },
+        {
+            "job_title": "Python And ML/AI developer",
+            "company": "E&Y Hyderabad",
+            "start_date": "2021/01/27",
+            "end_date": "2025/08/08",
+            "responsibilities": [
+                "Collected data, Studied and Interpreted Large data sets, conducted reports and performed accurate successful data management.",
+                "Developed and implemented new forecasting models which increased company productivity and Efficiency.",
+                "Worked on Tax Analysis project for Canada, UK, and Hong Kong clients.",
+                "Written Python code as per project requirements and crawled data from client recommended Documents.",
+                "Utilized open-CV, Tabula, camelot, and OCR for Data fetching.",
+                "Used Regular Expression techniques for data crawling with Python.",
+                "Maintained Mailing System to track output delivery to clients.",
+                "Developing Views and Reports as per the client Requirements.",
+                "Designing and Coding Web Pages.",
+                "Understanding new Business requirements through client status calls and specific Documents.",
+                "Bugs fixing and Co-Ordinating with Project leads and Team members."
+            ]
+        },
+        {
+            "job_title": "Pythonand Machine-Learning developer",
+            "company": "Joules to watts Business Solutions Pvt.ltd. Bangalore",
+            "start_date": "2020",
+            "end_date": "2021",
+            "responsibilities": [
+                "Worked on Research Overstock Data with Other Marketing Resources project.",
+                "Used Python (NumPy, Pandas, Scikit-Learn, MAT-LAB) to develop variety of models and algorithms for analytic purposes.",
+                "Utilized machine learning algorithms such as Decision Tree, Random Forests, and SVM.",
+                "Created scripts to extract images in JPEG format from metadata files using OpenCV.",
+                "Crawled data and converted to CSV, JSON, and XML formats.",
+                "Increased the accuracy of forecasting software from 80% to 95%.",
+                "Deployed applications to Django, Flask Interface, Fast API, and Streamlit."
+            ]
+        }
+    ],
+    "education": [
+        {
+            "degree": "B.Tech(CSE)",
+            "institution": "RGUKT, R.KValley(IIIT)",
+            "graduation_year": "2015"
+        },
+        {
+            "degree": "PUC(MBIPC)",
+            "institution": "RGUKT, R.KValley(IIIT)",
+            "graduation_year": "2011"
+        },
+        {
+            "degree": "SSC",
+            "institution": "Z.P.H.SCHOOL, Madupalli",
+            "graduation_year": "2009"
+        }
+    ]
+}

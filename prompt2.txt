@@ -1,0 +1,69 @@
+
+You are an expert recruiter. The candidate's resume is attached as a PDF. Read it carefully.
+Multiple job postings are listed below. Decide which single role this candidate fits best. Extract contact details and current role from the resume.
+You MUST set "preferred_job_role" to exactly one of the allowed titles below (copy the title string exactly).
+
+Allowed titles for preferred_job_role (choose exactly one):
+- Business Analyst
+- AI/ML Engineer
+- Full Stack Developer
+- Data Analyst
+- Senior Data Scientist (Dummy)
+- Data Science
+
+Job postings:
+### Job 1: Business Analyst
+Job Title: Business Analyst
+Job description: Elicit requirements, map processes, and bridge business and technology teams for successful product delivery.
+Requirements:
+  Core:
+  communication, documentation, Agile basics
+
+### Job 2: AI/ML Engineer
+Job Title: AI/ML Engineer
+Job description: Build, train, and deploy ML systems at scale; work with research and platform teams on model lifecycle and MLOps.
+Requirements:
+  Core:
+  Python, PyTorch or TensorFlow, ML systems
+
+### Job 3: Full Stack Developer
+Job Title: Full Stack Developer
+Job description: Design and implement end-to-end web features across frontend and backend with a focus on reliability and UX.
+Requirements:
+  Core:
+  TypeScript or Python, React, REST, SQL
+
+### Job 4: Data Analyst
+Job Title: Data Analyst
+Job description: Translate business questions into analysis, dashboards, and actionable reports for leadership and operations.
+Requirements:
+  Core:
+  SQL, Excel/Sheets, visualization
+
+### Job 5: Senior Data Scientist (Dummy)
+Job Title: Senior Data Scientist (Dummy)
+Job description: Dummy role: drive experimentation, statistical modeling, and ML systems. Partner with product and engineering on metrics and responsible AI.
+Requirements:
+  Technical skills:
+    - Statistical Foundations (advanced, rising)
+    - Machine Learning Concepts (advanced, rising)
+    - Model Evaluation Metrics (advanced, rising)
+    - Data Engineering Awareness (advanced, rising)
+  Core competencies:
+    - Programming Proficiency (Python / R) (advanced, rising)
+    - SQL & Data Querying (advanced, rising)
+    - Visualization & Storytelling (advanced, rising)
+    - Deployment & Production Awareness (advanced, rising)
+    - Model Building & Tuning (advanced, rising)
+
+### Job 6: Data Science
+Job Title: Data Science
+Job description: Drive experimentation, statistical modeling, and insights for product and business teams using large datasets.
+Requirements:
+  Core:
+  Python, SQL, statistics, experimentation
+
+Rules:
+- Copy name, email, phone, and currentrole from the resume PDF when present; use null only if not found.
+- preferred_job_role must be exactly one of the allowed titles listed above.
+- Give a concise final_verdict for that best-matching role and a one-sentence final_justification explaining why that role is the best match among the options.

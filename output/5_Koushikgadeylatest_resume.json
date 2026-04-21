@@ -1,0 +1,79 @@
+{
+    "name": "Koushik Gadey",
+    "email": "koushikgadey@gmail.com",
+    "phone": "7396969636",
+    "skills": [
+        "Functional Testing",
+        "Regression Testing",
+        "Python",
+        "Selenium",
+        "Pytest",
+        "REST Assured",
+        "Windows Server 2022",
+        "RHEL 8",
+        "ESXI 8.0",
+        "Ubuntu 22",
+        "VS Code",
+        "PyCharm",
+        "Eclipse",
+        "Git",
+        "MySQL",
+        "DAS",
+        "SAN",
+        "NAS",
+        "RAID",
+        "Backup & Replication",
+        "Agile (Scrum)",
+        "SDLC",
+        "STLC",
+        "Problem-solving skills",
+        "Rapid and continuous learning abilities",
+        "Adaptability to changing circumstances",
+        "Self-motivated",
+        "Effective teamwork and collaboration",
+        "Efficient time management"
+    ],
+    "experience": [
+        {
+            "job_title": "Quality Assurance Engineer",
+            "company": "Calsoft (India) Private Limited.",
+            "start_date": "Jul 2021",
+            "end_date": "Present",
+            "responsibilities": [
+                "Conducted certification testing for enterprise servers using VMware and Red Hat Enterprise Linux (RHEL) tools, ensuring compliance with industry standards.",
+                "Executed test cases based on detailed test plans, validating system performance, compatibility, and functionality.",
+                "Collected, analyzed, and documented test results and logs, providing comprehensive reports to Red Hat Enterprise (RHEL), VMware, and NVIDIA for validation.",
+                "Maintained detailed test documentation, ensuring traceability and compliance with certification requirements.",
+                "Assisted in automating test procedures to improve efficiency and accuracy in the certification process.",
+                "Conducted functional and regression testing of NetBackup's NAS and SAN storage protection across multiple arrays, including NetApp, Isilon, Hitachi, EMC Unity, EMC PowerMax, and Pure Storage.",
+                "Developed and executed automation scripts using Python, Selenium, PyTest to validate storage integration workflows.",
+                "Validated and enhanced plug-in code for different storage arrays to support Multi-Volume, Consistency Group, and Volume Group operations.",
+                "Performed extensive testing on snapshot-based replication to verify data integrity, failover handling, and recovery performance.",
+                "Designed, documented, and executed test plans and test cases in alignment with SDLC/STLC practices and Agile Scrum methodology.",
+                "Performed REST API testing to validate backup, replication, and recovery endpoints for storage workflows.",
+                "Identified and reported defects, collaborated with developers to troubleshoot complex issues, and ensured timely resolution.",
+                "Analyzed system logs and performance metrics to assess backup efficiency, replication reliability, and storage compatibility."
+            ]
+        },
+        {
+            "job_title": "Quality Assurance Engineer",
+            "company": "Xoriant Solutions.",
+            "start_date": "Feb 2021",
+            "end_date": "Jul 2021",
+            "responsibilities": [
+                "Testbed Preparation & Configuration – Set up and configure test environments based on specific test requirements to validate Flex Appliance functionalities.",
+                "Functional & Regression Testing – Executed test cases to verify MSDP, Advanced Disk, Lockdown Mode, and Recovery Storage Data features, ensuring stability and performance.",
+                "Defect Tracking & Reporting – Identified, reported, and monitored defects using bug-tracking tools, collaborating closely with development teams for resolution.",
+                "Test Automation & Documentation – Developed and maintained test scripts using python for new feature enhancements, ensuring efficient validation of functionalities.",
+                "Performance & Scalability Testing – Validated the appliance's ability to handle concurrent storage operations, ensuring optimal resource utilization and system resilience."
+            ]
+        }
+    ],
+    "education": [
+        {
+            "degree": "BTech in Computer Science",
+            "institution": "Sir M. Visvesvaraya Institute of Technology",
+            "graduation_year": null
+        }
+    ]
+}

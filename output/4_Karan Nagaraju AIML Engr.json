@@ -1,0 +1,131 @@
+{
+    "name": "Nagaraju Karan",
+    "email": "nagarajukaran3@gmail.com",
+    "phone": "7036214976",
+    "skills": [
+        "Python",
+        "PyTorch",
+        "TensorFlow",
+        "NumPy",
+        "Pandas",
+        "Supervised learning",
+        "Unsupervised learning",
+        "GenAI",
+        "Linear Algebra",
+        "Probability & Statistics",
+        "Natural Language Processing",
+        "Text Classification",
+        "Sentiment Analysis",
+        "Machine Translation",
+        "Retrieval-Augmented Generation (RAG)",
+        "Large Language Models (LLM)",
+        "Transformers Architecture",
+        "BERT",
+        "GPT Models",
+        "Computer vision",
+        "Model Fine-Tuning",
+        "Transfer Learning",
+        "Object detection",
+        "Image segmentation",
+        "Instance segmentation",
+        "Convolutional Neural Network (CNN)",
+        "AWS",
+        "Docker",
+        "FastAPI",
+        "Hugging Face",
+        "Xcode",
+        "iOS",
+        "Swift",
+        "SwiftUI",
+        "Combine",
+        "MVVM architecture",
+        "XCTest",
+        "Payment gateway integration",
+        "English",
+        "Hindi",
+        "Telugu"
+    ],
+    "experience": [
+        {
+            "job_title": "Senior Software Engineer",
+            "company": "ProcureX Technologies, Hyderabad",
+            "start_date": "2025-04",
+            "end_date": "Current",
+            "responsibilities": [
+                "Designed and developed scalable iOS applications for procurement and construction project management using Swift, SwiftUI, Combine, and MVVM architecture.",
+                "Built and maintained Inventory, PMS, and Procurement modules, ensuring timely delivery and high-quality releases.",
+                "Leveraged Combine for reactive data handling, state management, and real-time UI updates to improve app responsiveness.",
+                "Improved app performance through UI optimization, memory management, and crash reduction.",
+                "Implemented unit and UI testing using XCTest, increasing release stability."
+            ]
+        },
+        {
+            "job_title": "Senior Software Engineer",
+            "company": "NeuroGaint Systems, Hyderabad, India",
+            "start_date": "2024-09",
+            "end_date": "2025-03",
+            "responsibilities": [
+                "Led the development of an AI-driven Preventative Mental Health iOS app, integrating sentiment analysis and emotion recognition for early detection of mental health issues.",
+                "Designed conversational AI systems for personalized mental health support and actionable insights.",
+                "Built scalable NLP pipelines and fine-tuned models for analyzing sensitive mental health data while ensuring privacy compliance.",
+                "Collaborated with psychologists to align AI solutions with real-world mental health requirements.",
+                "Enhanced the app with voice-based assessments and interactive features, improving accessibility and user engagement."
+            ]
+        },
+        {
+            "job_title": "Senior Software Engineer",
+            "company": "IGURU PORTAL SERRVICES, Hyderabad, india",
+            "start_date": "2022-07",
+            "end_date": "2024-05",
+            "responsibilities": [
+                "Designed and implemented advanced NLP models to enhance text analysis and processing capabilities, improving accuracy and efficiency by 25%.",
+                "Developed custom transformer models and successfully deployed them into Hugging Face Spaces, facilitating real-time NLP solutions.",
+                "Created robust text classification systems to distinguish between AI-generated and human-generated content, achieving an accuracy rate of over 90%.",
+                "Utilized machine learning algorithms and NLP techniques to categorize text data, leading to improved data management and retrieval processes.",
+                "Developed and optimized machine translation models to support multilingual content, enhancing global communication and user experience.",
+                "Leveraged deep learning techniques to improve the quality and accuracy of translations across multiple languages."
+            ]
+        },
+        {
+            "job_title": "Senior Software Engineer",
+            "company": "Promantra Synergy Solutions Limited, Hyderabad, india",
+            "start_date": "2020-07",
+            "end_date": "2022-02",
+            "responsibilities": [
+                "Applied Agile software development methodology to elevate final products and streamline development efforts.",
+                "Translated basic design plans into full iOS app frameworks, delegating project components to appropriate team members.",
+                "Designed quality assurance testing for junior developer output, maintaining adherence to business goals and boosting productivity.",
+                "Researched and selected APIs for integration into development projects."
+            ]
+        },
+        {
+            "job_title": "IOS Application Developer",
+            "company": "Vitruvian 3D Solutions Pvt Ltd, Hyderabad, india",
+            "start_date": "2018-07",
+            "end_date": "2020-05",
+            "responsibilities": [
+                "Designed user experience frameworks applicable to fit both iPad and iPhone screens.",
+                "Worked with quality assurance team to confirm app compatibility with analogous solutions on other platforms.",
+                "Applied Agile software development methodology to elevate final products and streamline development efforts.",
+                "Included visible but unobtrusive ad placement opportunities within apps, increasing revenue potential without disrupting usage."
+            ]
+        }
+    ],
+    "education": [
+        {
+            "degree": "Bachelor of Engineering: Computer Science And Programming",
+            "institution": "Matrusri Engineering College - Hyderabad, TG",
+            "graduation_year": "2016-01"
+        },
+        {
+            "degree": "MPC: Maths, Physics And Chemistry",
+            "institution": "Intermediate Junior College",
+            "graduation_year": "2012-01"
+        },
+        {
+            "degree": "Secondary School Certificate",
+            "institution": "ZPHS High School - Kondapur",
+            "graduation_year": "2010-01"
+        }
+    ]
+}

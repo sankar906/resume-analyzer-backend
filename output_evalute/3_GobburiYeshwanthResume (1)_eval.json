@@ -1,0 +1,20 @@
+{
+    "knowledge_areas": {
+        "rating": 1,
+        "reason": "No evidence found for statistical foundations, machine learning concepts, or model evaluation metrics."
+    },
+    "technical_skills": {
+        "rating": 2,
+        "reason": "Candidate lists Python and MySQL but lacks evidence of data visualization, model building, or AI/ML-specific deployment."
+    },
+    "experience": {
+        "rating": 1,
+        "reason": "Professional experience is centered on backend web development and general Python scripting rather than AI/ML engineering."
+    },
+    "certifications": {
+        "rating": 1,
+        "reason": "No evidence found."
+    },
+    "final_verdict": "Reject",
+    "final_justification": "The candidate's background is focused on backend web development and lacks the core machine learning and statistical expertise required for this role."
+}

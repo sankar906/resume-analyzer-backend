@@ -1,0 +1,20 @@
+{
+    "knowledge_areas": {
+        "rating": 4,
+        "reason": "The resume lists Probability & Statistics, Linear Algebra, and core ML concepts like Supervised/Unsupervised learning and Transformers."
+    },
+    "technical_skills": {
+        "rating": 3,
+        "reason": "Demonstrates proficiency in Python, PyTorch, and model deployment via FastAPI/Docker, but lacks explicit mention of SQL and data visualization tools."
+    },
+    "experience": {
+        "rating": 3,
+        "reason": "Extensive background in AI-driven software engineering and NLP model development, though primarily focused on iOS integration rather than pure data analysis."
+    },
+    "certifications": {
+        "rating": 1,
+        "reason": "No evidence found."
+    },
+    "final_verdict": "Average",
+    "final_justification": "The candidate possesses strong machine learning and NLP engineering expertise but lacks the SQL and data visualization experience explicitly required for the data analyst component of the role."
+}

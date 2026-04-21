@@ -1,0 +1,20 @@
+{
+    "knowledge_areas": {
+        "rating": 1,
+        "reason": "No evidence found for statistical foundations, machine learning concepts, or model evaluation metrics."
+    },
+    "technical_skills": {
+        "rating": 2,
+        "reason": "Candidate demonstrates strong SQL and Power BI skills but lacks Python proficiency and machine learning model building experience."
+    },
+    "experience": {
+        "rating": 2,
+        "reason": "Professional background is strictly in Business Intelligence and data visualization with no exposure to AI/ML model deployment."
+    },
+    "certifications": {
+        "rating": 1,
+        "reason": "No evidence found."
+    },
+    "final_verdict": "Reject",
+    "final_justification": "The candidate lacks the required Python programming skills and machine learning expertise necessary for an AI/ML Engineer role."
+}

@@ -1,0 +1,20 @@
+{
+    "knowledge_areas": {
+        "rating": 3,
+        "reason": "The resume demonstrates proficiency in machine learning and predictive analytics through internship projects, though it lacks explicit mention of statistical foundations or model evaluation metrics."
+    },
+    "technical_skills": {
+        "rating": 3,
+        "reason": "The candidate shows strong skills in Python, SQL, and Power BI visualization, but there is no evidence of model deployment or production-level engineering experience."
+    },
+    "experience": {
+        "rating": 2,
+        "reason": "Work history is limited to virtual internships and project-based roles, with the candidate currently completing their undergraduate degree."
+    },
+    "certifications": {
+        "rating": 1,
+        "reason": "No evidence found."
+    },
+    "final_verdict": "Average",
+    "final_justification": "The candidate possesses the core technical skills in Python and SQL but lacks the professional experience and deployment expertise required for a full AI/ML Engineer position."
+}

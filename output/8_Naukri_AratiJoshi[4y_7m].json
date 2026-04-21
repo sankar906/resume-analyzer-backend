@@ -1,0 +1,83 @@
+{
+    "name": "Arati Joshi",
+    "email": "joshiaratinj@gmail.com",
+    "phone": "9172787305",
+    "skills": [
+        "Python",
+        "SQL",
+        "Pandas",
+        "Numpy",
+        "Scikit-learn",
+        "TensorFlow",
+        "Keras",
+        "Matplotlib",
+        "Seaborn",
+        "NLTK",
+        "Artificial Neural Network(ANN)",
+        "Recurrent Neural Networks (RNNs)",
+        "Convolutional Neural Networks (CNNs)",
+        "LSTM",
+        "GRU",
+        "Attention Mechanisms",
+        "Transformer Architectures",
+        "Transfer Learning",
+        "Hugging Face",
+        "LangChain",
+        "LangGraph",
+        "OpenAI API",
+        "Prompt Engineering",
+        "Retrieval-Augmented Generation (RAG)",
+        "RAG Evaluation (BLEU, ROUGE)",
+        "AI Agents",
+        "Large Language Models (LLMs)",
+        "AWS (EC2, S3)",
+        "Regression",
+        "Classification",
+        "Clustering",
+        "EDA",
+        "Random forest",
+        "Xgboost",
+        "Hyperparameter Tuning",
+        "Cross Validation",
+        "Model Evaluation",
+        "Feature Engineering",
+        "Text Preprocessing",
+        "Tokenization",
+        "Stemming & Lemmatization",
+        "Embedding Techniques",
+        "Sentiment Analysis",
+        "Named Entity Recognition",
+        "BERT",
+        "Pinecone",
+        "FAISS",
+        "Chroma",
+        "Docker",
+        "Git",
+        "Jupyter Notebook"
+    ],
+    "experience": [
+        {
+            "job_title": "AI/ML Engineer",
+            "company": "Qatasys",
+            "start_date": "05/2021",
+            "end_date": "Present",
+            "responsibilities": [
+                "AI/ML Engineer with experience in designing scalable machine learning pipelines and NLP-driven applications across airline, oil & gas, and e-commerce domains.",
+                "Proficient in Python and SQL, with hands-on experience in ML/DL frameworks such as Scikit-learn, TensorFlow and NLP libraries like spaCy and NLTK.",
+                "Integrated Generative Al techniques, including Retrieval-Augmented Generation (RAG) pipelines and promptengineering with LLMs to enhance analytical outputs and automate complex data interpretations.",
+                "Performed extensive data preprocessing and feature engineering, handling missing data, outliers, and feature selection to improve model accuracy and generalization.",
+                "Conducted model evaluation and performance monitoring using metrics such as RMSE, MAE, Precision, Recall, F1-score, and implemented model retraining strategies for continuous improvement.",
+                "Applied version control using Git to manage code changes and collaborate efficiently with team members.",
+                "Collaborated within Agile teams, participating in daily stand-ups, sprint planning, and code reviews to ensure alignment with project timelines and deliverables.",
+                "Documented end-to-end ML workflows, model architectures, and evaluation results, ensuring reproducibility and knowledge transfer within the team."
+            ]
+        }
+    ],
+    "education": [
+        {
+            "degree": "Bachelor Of Science in Computer Science",
+            "institution": "SRTMU",
+            "graduation_year": null
+        }
+    ]
+}

@@ -1,0 +1,75 @@
+{
+    "name": "YESHWANTH GOBBURI",
+    "email": "gobburiyeswanth239@gmail.com",
+    "phone": "+91 6305122294",
+    "skills": [
+        "JavaScript(ES6+)",
+        "Python",
+        "React.js",
+        "HTML5",
+        "CSS",
+        "Tailwind CSS",
+        "Node.js",
+        "Express.js",
+        "RESTful APIs",
+        "JWT Authentication",
+        "Bcrypt",
+        "MongoDB",
+        "MySQL",
+        "Git",
+        "GitHub",
+        "Postman",
+        "VS Code",
+        "NPM",
+        "DSA",
+        "Problem Solving",
+        "API Design & Integration",
+        "Debugging & Code Refactoring",
+        "English",
+        "Hindi",
+        "Telugu"
+    ],
+    "experience": [
+        {
+            "job_title": "Backend Developer Intern",
+            "company": "Nukkad Shops Pvt. Ltd.",
+            "start_date": "JAN 2025",
+            "end_date": "SEP 2025",
+            "responsibilities": [
+                "Worked as a Backend Developer on an e-commerce Android application, contributing to the migration of the backend system from PHP to node.js for better performance and scalability.",
+                "Develop and maintained RESTful APIs using Nodejs and Express, handling core business logic for products, users, orders and payments.",
+                "Integrated MongoDB for efficient data storage and retrieval, optimised queries and ensure data consistency during the transition phase.",
+                "Migrated existing backend functionalities from legacy PHP codebase to Node.js ensuring backward compatibility and minimal downtime.",
+                "Implemented new features while maintaining and refactoring existing modules to improve core quality and system stability.",
+                "Collaborated with frontend and Android teams to align API contracts and support CS feature integration.",
+                "Assisted in debunking production issues, improving error handling and monitoring API performance."
+            ]
+        },
+        {
+            "job_title": "Python Development Intern",
+            "company": "CODSOFT",
+            "start_date": "OCT 2023",
+            "end_date": "NOV 2023",
+            "responsibilities": [
+                "Completed a Python internship at CodSoft, successfully executed various projects demonstrating proficiency in Python programming, including the development of simple applications and tools."
+            ]
+        }
+    ],
+    "education": [
+        {
+            "degree": "Bachelor of Technology in Internet of Things (IoT)",
+            "institution": "Sri Indu College of Engineering and Technology, Sheriguda",
+            "graduation_year": "2024"
+        },
+        {
+            "degree": "Intermediate(MPC), TSBIE",
+            "institution": "Narayana Junior College, Tarnaka",
+            "graduation_year": "2020"
+        },
+        {
+            "degree": "class X, SSC",
+            "institution": "St. Patrick’s High School",
+            "graduation_year": "2018"
+        }
+    ]
+}

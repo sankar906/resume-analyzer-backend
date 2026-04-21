@@ -1,0 +1,1 @@
+"""SeaHire application package."""
