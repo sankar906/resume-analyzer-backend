@@ -1,26 +1,5 @@
--- public.candidate_eval + public.fn_candidate_eval.
--- Prerequisite: public.candidates must exist (migrations/candidates.sql — TABLE section).
-
-DROP FUNCTION IF EXISTS public.fn_candidate_eval CASCADE;
-DROP TABLE IF EXISTS public.candidate_eval CASCADE;
-
-CREATE TABLE public.candidate_eval (
-    evaluation_id uuid NOT NULL,
-    candidate_id uuid NOT NULL,
-    jd_id uuid NOT NULL,
-    jd_title text NULL,
-    evaluations jsonb NULL,
-    final_rating integer NULL,
-    final_verdict text NULL,
-    final_justification text NULL,
-    created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-    CONSTRAINT candidate_eval_pkey PRIMARY KEY (evaluation_id),
-    CONSTRAINT candidate_eval_candidate_fk FOREIGN KEY (candidate_id)
-        REFERENCES public.candidates (candidate_id) ON DELETE CASCADE
-);
-
-CREATE INDEX candidate_eval_candidate_jd_idx
-    ON public.candidate_eval USING btree (candidate_id, jd_id);
+-- Upgrade: fn_candidate_eval mode 2 — p_limit NULL returns all matching rows (no practical cap).
+-- Run on existing DBs that already have public.fn_candidate_eval. Does not drop candidate_eval data.
 
 CREATE OR REPLACE FUNCTION public.fn_candidate_eval(
     p_mode integer,
@@ -58,7 +37,6 @@ DECLARE
     v_has_filter boolean;
 BEGIN
     IF p_mode = 1 THEN
-        -- Replace prior evaluation for the same (candidate_id, jd_id); leave other pairs unchanged.
         DELETE FROM public.candidate_eval ce
         WHERE ce.candidate_id = p_candidate_id
           AND ce.jd_id IS NOT DISTINCT FROM p_jd_id;
@@ -95,7 +73,6 @@ BEGIN
             ins.final_justification,
             ins.created_at;
     ELSIF p_mode = 2 THEN
-        -- p_limit NULL => return all matching rows (practical no-cap). Otherwise clamp 1..10000.
         IF p_limit IS NULL THEN
             v_lim := 2147483647;
         ELSIF p_limit = 0 THEN

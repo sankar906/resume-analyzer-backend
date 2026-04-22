@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import shutil
 import uuid
 from contextlib import asynccontextmanager
 
@@ -14,6 +13,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from src.api.v1.api import api_router
+from src.api.v1.endpoints.resume_info import MAX_UPLOAD_BYTES
+from src.core.config import validate_gemini_environment
 from src.db.init_db import init_db
 from src.db.manager import db_manager
 
@@ -35,6 +36,11 @@ async def lifespan(_app: FastAPI):
         await init_db()
     except Exception:
         logger.exception("startup: database init failed")
+        raise
+    try:
+        validate_gemini_environment()
+    except Exception:
+        logger.exception("startup: Gemini environment validation failed")
         raise
     yield
     try:
@@ -78,8 +84,21 @@ if extract_resume_details is not None and evaluate_extracted_resume is not None:
         file_id = str(uuid.uuid4())
         temp_path = os.path.join("temp_uploads", f"{file_id}.pdf")
         try:
+            total = 0
             with open(temp_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
+                while True:
+                    chunk = await file.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    total += len(chunk)
+                    if total > MAX_UPLOAD_BYTES:
+                        raise HTTPException(
+                            status_code=413,
+                            detail=(
+                                f"File too large (max {MAX_UPLOAD_BYTES // (1024 * 1024)} MB)."
+                            ),
+                        )
+                    buffer.write(chunk)
 
             json_output_str = extract_resume_details(temp_path)
             eval_result_str = evaluate_extracted_resume(json_output_str)

@@ -27,8 +27,12 @@ class ReportingBlock(BaseModel):
 
 
 class ExperienceBlock(BaseModel):
-    min_experience: int | None = None
-    max_experience: int | None = None
+    """Free-text experience requirement; maps to ``job_description.experience``."""
+
+    text: str | None = Field(
+        default=None,
+        description='e.g. "2 to 4 years in Data Science, Analytics, or related roles."',
+    )
 
 
 class CompensationBlock(BaseModel):
@@ -81,8 +85,7 @@ class ReportingPartial(BaseModel):
 
 
 class ExperiencePartial(BaseModel):
-    min_experience: int | None = None
-    max_experience: int | None = None
+    text: str | None = None
 
 
 class CompensationPartial(BaseModel):
@@ -141,8 +144,7 @@ def build_fn_jobs_args_create(
         body.requirements if body.requirements else None,
         responsibilities_to_text(cont.responsibilities),
         jd.status,
-        exp.min_experience,
-        exp.max_experience,
+        exp.text,
         comp.min_salary,
         comp.max_salary,
         jd.employment_type,
@@ -155,7 +157,9 @@ def build_fn_jobs_args_create(
     )
 
 
-def build_fn_jobs_args_update(job_uuid: UUID, body: JobDescriptionUpdate) -> tuple[Any, ...]:
+def build_fn_jobs_args_update(
+    job_uuid: UUID, body: JobDescriptionUpdate
+) -> tuple[Any, ...]:
     jd = body.job_details
     rep = body.reporting
     exp = body.experience
@@ -170,12 +174,9 @@ def build_fn_jobs_args_update(job_uuid: UUID, body: JobDescriptionUpdate) -> tup
         jd.location if jd else None,
         cont.description if cont else None,
         body.requirements,
-        responsibilities_to_text(cont.responsibilities)
-        if cont is not None
-        else None,
+        responsibilities_to_text(cont.responsibilities) if cont is not None else None,
         jd.status if jd else None,
-        exp.min_experience if exp else None,
-        exp.max_experience if exp else None,
+        exp.text if exp else None,
         comp.min_salary if comp else None,
         comp.max_salary if comp else None,
         jd.employment_type if jd else None,

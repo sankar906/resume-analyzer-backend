@@ -83,3 +83,14 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def validate_gemini_environment() -> None:
+    """Fail fast at startup if Gemini env is unusable (no network call)."""
+    s = get_settings()
+    if not (s.google_api_key or "").strip():
+        raise RuntimeError(
+            "GOOGLE_API_KEY is missing or empty. Set it in the environment for Gemini."
+        )
+    if not (s.gemini_model or "").strip():
+        raise RuntimeError("GEMINI_MODEL is missing or empty.")

@@ -17,6 +17,19 @@ Run **`upgrade_candidate_eval_jd_title.sql`** — `ALTER TABLE ... ADD COLUMN jd
 
 If `candidate_eval` already exists, run **`upgrade_candidate_eval_replace_same_jd.sql`** — updates `fn_candidate_eval` so mode **1** deletes any existing row with the same `(candidate_id, jd_id)` before inserting the new evaluation. Safe to run on populated databases (no table drop).
 
+## Existing database (`fn_candidate_eval` mode 2: optional row cap)
+
+Run **`upgrade_candidate_eval_p_limit_null.sql`** so mode **2** treats **`p_limit` NULL** as “return all matching rows” (no 100-row default). API `GET …/candidates/evaluations` omits `limit` by default.
+
+## Job descriptions
+
+- **`job_description.sql`** — `public.job_description` with a single **`experience`** text column (no `min_experience` / `max_experience`) and **`public.fn_job_description`** (modes 1–4; `p_experience` replaces the two int params).
+
+## Existing database (job experience as text)
+
+Run **`upgrade_job_description_experience_text.sql`** on DBs that still have `min_experience` / `max_experience`. It adds **`experience`**, copies a best-effort string from the old ints, drops the old columns, and replaces **`fn_job_description`**.
+
 ## Source of truth
 
-- **`candidates.sql`** + **`candidates_eval.sql`** define the current schema and functions.
+- **`candidates.sql`** + **`candidates_eval.sql`** define the current candidate schema and functions.
+- **`job_description.sql`** defines job description table + function.

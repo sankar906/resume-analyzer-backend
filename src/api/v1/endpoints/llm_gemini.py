@@ -1,47 +1,76 @@
 """Google Gemini helpers for resume extraction and evaluation (no HTTP routes)."""
 
 import asyncio
+import json
 import logging
-from typing import Any
+from typing import Any, Callable
 
 from google import genai
 from google.genai import types
+from pydantic import ValidationError
 
 from src.api.v1.prompts.eval_injection import (
     build_job_context_from_row,
     filter_resume_json_for_prompt,
 )
 from src.api.v1.prompts.gemini_prompt import (
+    CANDIDATES_EVAL_PROMPT,
     EVALUATE_PROMPT,
     JOB_MATCH_PROMPT_MULTI,
     JOB_MATCH_PROMPT_SINGLE,
-    REQUIREMENTS_ALIGNED_EVAL_PROMPT,
     RESUME_PARSING_PROMPT,
 )
 from src.core.config import get_settings
-from src.schemas.requirements_eval import RequirementsAlignedEvalOutput
+from src.schemas.candidates_eval import CandidatesEvalOutput
 from src.schemas.resume import EvaluationOutput, ResumeInfo, ResumeJobMatchOutput
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_json_with_one_llm_retry(
+    *,
+    label: str,
+    parse: Callable[[str], Any],
+    generate_response: Callable[[], Any],
+) -> Any:
+    """If ``parse(response.text)`` fails, call ``generate_response`` once more and parse again."""
+    response = generate_response()
+    try:
+        return parse(response.text)
+    except (ValidationError, json.JSONDecodeError, ValueError, TypeError) as e:
+        logger.warning("%s: output parse failed (%s); retrying generate_content once", label, e)
+        response = generate_response()
+        return parse(response.text)
 
 
 def _extract(pdf_bytes: bytes) -> ResumeInfo:
     try:
         settings = get_settings()
         client = genai.Client(api_key=settings.google_api_key)
-        response = client.models.generate_content(
-            model=settings.gemini_model,
-            contents=[
-                types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"),
-                types.Part.from_text(text=RESUME_PARSING_PROMPT),
-            ],
-            config=types.GenerateContentConfig(
-                temperature=settings.gemini_temperature,
-                response_mime_type="application/json",
-                response_schema=ResumeInfo,
-            ),
+
+        def _generate():
+            try:
+                return client.models.generate_content(
+                    model=settings.gemini_model,
+                    contents=[
+                        types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"),
+                        types.Part.from_text(text=RESUME_PARSING_PROMPT),
+                    ],
+                    config=types.GenerateContentConfig(
+                        temperature=settings.gemini_temperature,
+                        response_mime_type="application/json",
+                        response_schema=ResumeInfo,
+                    ),
+                )
+            except Exception:
+                logger.exception("gemini extraction: generate_content failed")
+                raise
+
+        return _parse_json_with_one_llm_retry(
+            label="gemini extraction",
+            parse=ResumeInfo.model_validate_json,
+            generate_response=_generate,
         )
-        return ResumeInfo.model_validate_json(response.text)
     except Exception:
         logger.exception("gemini extraction failed")
         raise
@@ -61,7 +90,7 @@ def _evaluate(
             ctx_body = build_job_context_from_row(jd_row)
             if not ctx_body.strip():
                 ctx_body = "(No job description field values were available for the selected keys.)"
-            job_context = "Job Description:\n" + ctx_body
+            job_context = "\n" + ctx_body
         else:
             job_context = "(No job description was provided.)"
 
@@ -74,16 +103,27 @@ def _evaluate(
                 f.write(prompt)
         except OSError:
             logger.warning("llm_gemini: could not write prompt.txt", exc_info=True)
-        response = client.models.generate_content(
-            model=settings.gemini_model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=settings.gemini_temperature,
-                response_mime_type="application/json",
-                response_schema=EvaluationOutput,
-            ),
+
+        def _generate():
+            try:
+                return client.models.generate_content(
+                    model=settings.gemini_model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        temperature=settings.gemini_temperature,
+                        response_mime_type="application/json",
+                        response_schema=EvaluationOutput,
+                    ),
+                )
+            except Exception:
+                logger.exception("gemini evaluation: generate_content failed")
+                raise
+
+        return _parse_json_with_one_llm_retry(
+            label="gemini evaluation",
+            parse=EvaluationOutput.model_validate_json,
+            generate_response=_generate,
         )
-        return EvaluationOutput.model_validate_json(response.text)
     except Exception:
         logger.exception("gemini evaluation failed")
         raise
@@ -93,54 +133,76 @@ def _resume_job_match_pdf(pdf_bytes: bytes, prompt: str) -> ResumeJobMatchOutput
     try:
         settings = get_settings()
         client = genai.Client(api_key=settings.google_api_key)
-        response = client.models.generate_content(
-            model=settings.gemini_model,
-            contents=[
-                types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"),
-                types.Part.from_text(text=prompt),
-            ],
-            config=types.GenerateContentConfig(
-                temperature=settings.gemini_temperature,
-                response_mime_type="application/json",
-                response_schema=ResumeJobMatchOutput,
-            ),
+
+        def _generate():
+            try:
+                return client.models.generate_content(
+                    model=settings.gemini_model,
+                    contents=[
+                        types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"),
+                        types.Part.from_text(text=prompt),
+                    ],
+                    config=types.GenerateContentConfig(
+                        temperature=settings.gemini_temperature,
+                        response_mime_type="application/json",
+                        response_schema=ResumeJobMatchOutput,
+                    ),
+                )
+            except Exception:
+                logger.exception("gemini resume job match: generate_content failed")
+                raise
+
+        return _parse_json_with_one_llm_retry(
+            label="gemini resume job match",
+            parse=ResumeJobMatchOutput.model_validate_json,
+            generate_response=_generate,
         )
-        return ResumeJobMatchOutput.model_validate_json(response.text)
     except Exception:
         logger.exception("gemini resume job match failed")
         raise
 
 
-def _requirements_aligned_eval_pdf(
+def _candidates_eval_llm_pdf(
     pdf_bytes: bytes, prompt: str
-) -> RequirementsAlignedEvalOutput:
-    """Job context + PDF resume → requirements-shaped JSON (no strict response_schema; dict keys are dynamic)."""
+) -> CandidatesEvalOutput:
+    """Job context + PDF resume → candidates eval JSON (no strict response_schema; dict keys are dynamic)."""
     try:
         settings = get_settings()
         client = genai.Client(api_key=settings.google_api_key)
-        response = client.models.generate_content(
-            model=settings.gemini_model,
-            contents=[
-                types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"),
-                types.Part.from_text(text=prompt),
-            ],
-            config=types.GenerateContentConfig(
-                temperature=settings.gemini_temperature,
-                response_mime_type="application/json",
-            ),
+
+        def _generate():
+            try:
+                return client.models.generate_content(
+                    model=settings.gemini_model,
+                    contents=[
+                        types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"),
+                        types.Part.from_text(text=prompt),
+                    ],
+                    config=types.GenerateContentConfig(
+                        temperature=settings.gemini_temperature,
+                        response_mime_type="application/json",
+                    ),
+                )
+            except Exception:
+                logger.exception("gemini candidates eval: generate_content failed")
+                raise
+
+        return _parse_json_with_one_llm_retry(
+            label="gemini candidates eval",
+            parse=CandidatesEvalOutput.model_validate_json,
+            generate_response=_generate,
         )
-        return RequirementsAlignedEvalOutput.model_validate_json(response.text)
     except Exception:
-        logger.exception("gemini requirements-aligned eval (pdf) failed")
+        logger.exception("gemini candidates eval (pdf) failed")
         raise
 
 
-def build_requirements_aligned_prompt(
+def build_candidates_eval_prompt(
     job_context: str,
     resume_instruction: str,
 ) -> str:
-    """Fill REQUIREMENTS_ALIGNED_EVAL_PROMPT."""
-    return REQUIREMENTS_ALIGNED_EVAL_PROMPT.format(
+    """Fill CANDIDATES_EVAL_PROMPT."""
+    return CANDIDATES_EVAL_PROMPT.format(
         job_context=job_context,
         resume_instruction=resume_instruction,
     )
@@ -182,7 +244,7 @@ async def run_evaluation(
     return await asyncio.to_thread(_evaluate, resume_json, jd_row)
 
 
-async def run_requirements_aligned_eval_pdf(
+async def run_candidates_eval_pdf(
     pdf_bytes: bytes, prompt: str
-) -> RequirementsAlignedEvalOutput:
-    return await asyncio.to_thread(_requirements_aligned_eval_pdf, pdf_bytes, prompt)
+) -> CandidatesEvalOutput:
+    return await asyncio.to_thread(_candidates_eval_llm_pdf, pdf_bytes, prompt)

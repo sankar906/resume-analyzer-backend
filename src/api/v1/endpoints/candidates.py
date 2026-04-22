@@ -14,8 +14,8 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 
 from src.api.v1.endpoints.llm_gemini import (
-    build_requirements_aligned_prompt,
-    run_requirements_aligned_eval_pdf,
+    build_candidates_eval_prompt,
+    run_candidates_eval_pdf,
 )
 from src.api.v1.endpoints.resume_evaluation import (
     _jd_title_from_db_row,
@@ -30,7 +30,7 @@ from src.api.v1.endpoints.resume_info import (
 from src.api.v1.prompts.eval_injection import build_job_context_from_row
 from src.db.manager import db_manager
 from src.schemas.common import BaseResponse
-from src.schemas.requirements_eval import RequirementsAlignedEvalOutput
+from src.schemas.candidates_eval import CandidatesEvalOutput
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +51,20 @@ resume_instruction_pdf = (
     "The candidate resume is attached as a PDF. Read the entire document for "
     "contact details, experience, and evidence for each requirement line."
 )
+
+# Filenames for saving the full requirements-aligned prompt (cwd): upload vs re-eval.
+_PROMPT_DUMP_UPLOAD = "prompt1.txt"
+_PROMPT_DUMP_REEVAL = "prompt2.txt"
+
+
+def _write_candidates_eval_prompt_file(filename: str, prompt: str) -> None:
+    """Persist the exact prompt text sent with the PDF to Gemini; failures are non-fatal."""
+    try:
+        Path(filename).write_text(prompt, encoding="utf-8", newline="\n")
+    except OSError:
+        logger.warning(
+            "candidates eval: could not write prompt file %s", filename, exc_info=True
+        )
 
 
 async def _fetch_candidate_row(candidate_id: str) -> dict[str, Any] | None:
@@ -173,18 +187,23 @@ async def _evaluations_by_candidate_ids(
     return dict(grouped)
 
 
-async def _requirements_eval_pdf(
-    pdf_bytes: bytes, job_context: str
-) -> RequirementsAlignedEvalOutput:
-    prompt = build_requirements_aligned_prompt(job_context, resume_instruction_pdf)
-    return await run_requirements_aligned_eval_pdf(pdf_bytes, prompt)
+async def _candidates_eval_pdf(
+    pdf_bytes: bytes,
+    job_context: str,
+    *,
+    prompt_dump_filename: str | None = None,
+) -> CandidatesEvalOutput:
+    prompt = build_candidates_eval_prompt(job_context, resume_instruction_pdf)
+    if prompt_dump_filename:
+        _write_candidates_eval_prompt_file(prompt_dump_filename, prompt)
+    return await run_candidates_eval_pdf(pdf_bytes, prompt)
 
 
 async def _insert_evaluation_run(
     evaluation_id: uuid.UUID,
     candidate_id: str,
     jd_uuid: Any,
-    out: RequirementsAlignedEvalOutput,
+    out: CandidatesEvalOutput,
     jd_title: str | None = None,
 ) -> list[dict[str, Any]]:
     evaluations_dict: dict[str, Any] = out.model_dump(mode="json")["evaluations"]
@@ -260,10 +279,18 @@ async def list_candidate_evaluations(
         None,
         description="Exact match on final_verdict; repeat param for multiple values.",
     ),
-    limit: int = Query(100, ge=1, le=10000, description="Page size (max 10000)."),
+    limit: int | None = Query(
+        default=None,
+        description="Omit for no row cap (all matching rows). If set, 1–10000.",
+    ),
     offset: int = Query(0, ge=0, description="Rows to skip."),
 ):
     """Filter `candidate_eval` (same query params as before). Response ``rows`` match GET /candidates: one row per distinct candidate in the result, with ``all_evaluations`` (full list per candidate)."""
+    if limit is not None and (limit < 1 or limit > 10000):
+        raise HTTPException(
+            status_code=422,
+            detail="limit must be between 1 and 10000, or omitted for no cap.",
+        )
     ev_id = _parse_uuid_opt(evaluation_id, "evaluation_id")
     cid_one = _parse_uuid_opt(candidate_id, "candidate_id")
     jd_u = _parse_uuid_opt(jd_id, "jd_id")
@@ -363,7 +390,7 @@ async def list_candidates(
         None,
         description="Exact match on present_role; repeat param for multiple values.",
     ),
-    limit: int = Query(100, ge=1, le=500, description="Page size (max 500)."),
+    limit: int = Query(50, ge=1, le=500, description="Page size (max 500)."),
     offset: int = Query(0, ge=0, description="Rows to skip."),
 ):
     """List/filter candidates (candidate table only). Nested ``all_evaluations`` loaded separately."""
@@ -556,17 +583,21 @@ async def candidates_eval(
 
     ctx_body = build_job_context_from_row(jd_row)
     if not ctx_body.strip():
-        ctx_body = "(No job description field values were available for the selected keys.)"
-    job_context = "Job Description:\n" + ctx_body
+        ctx_body = (
+            "(No job description field values were available for the selected keys.)"
+        )
+    job_context = ctx_body
     jd_uuid = jd_row.get("jd_id")
 
-    out: RequirementsAlignedEvalOutput
+    out: CandidatesEvalOutput
     evaluation_id = uuid.uuid4()
 
     if has_file:
         pdf_bytes = await normalize_upload_to_pdf_bytes(file)
         try:
-            out = await _requirements_eval_pdf(pdf_bytes, job_context)
+            out = await _candidates_eval_pdf(
+                pdf_bytes, job_context, prompt_dump_filename=_PROMPT_DUMP_UPLOAD
+            )
         except Exception as e:
             logger.exception("candidates eval: Gemini failed (upload)")
             raise HTTPException(
@@ -576,9 +607,7 @@ async def candidates_eval(
         stem = (out.candidate_name or "").strip()
         if not stem:
             stem = Path(file.filename or "resume").stem or "resume"
-        resume_basename = (
-            f"{safe_resume_filename(stem)}_{uuid.uuid4()}.pdf"
-        ).lower()
+        resume_basename = (f"{safe_resume_filename(stem)}_{uuid.uuid4()}.pdf").lower()
         try:
             save_resume_pdf(pdf_bytes, resume_basename)
         except Exception as e:
@@ -601,10 +630,14 @@ async def candidates_eval(
             )
         except Exception as e:
             logger.exception("candidates eval: candidate insert failed")
-            raise HTTPException(status_code=500, detail=f"DB insert (candidate) failed: {e}") from e
+            raise HTTPException(
+                status_code=500, detail=f"DB insert (candidate) failed: {e}"
+            ) from e
 
         if not cand_rows:
-            raise HTTPException(status_code=500, detail="Candidate insert returned no rows.")
+            raise HTTPException(
+                status_code=500, detail="Candidate insert returned no rows."
+            )
 
         run_rows = await _insert_evaluation_run(
             evaluation_id,
@@ -646,7 +679,9 @@ async def candidates_eval(
 
     basename = Path(str(rp).strip()).name
     if basename != str(rp).strip():
-        raise HTTPException(status_code=422, detail="Invalid resume_path on candidate row.")
+        raise HTTPException(
+            status_code=422, detail="Invalid resume_path on candidate row."
+        )
 
     file_path = (RESUME_FOLDER / basename).resolve()
     try:
@@ -661,7 +696,9 @@ async def candidates_eval(
 
     pdf_bytes = file_path.read_bytes()
     try:
-        out = await _requirements_eval_pdf(pdf_bytes, job_context)
+        out = await _candidates_eval_pdf(
+            pdf_bytes, job_context, prompt_dump_filename=_PROMPT_DUMP_REEVAL
+        )
     except Exception as e:
         logger.exception("candidates eval: Gemini failed (existing candidate)")
         raise HTTPException(

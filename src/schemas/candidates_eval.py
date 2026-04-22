@@ -1,4 +1,4 @@
-"""Schemas for requirements-aligned resume evaluation (LLM + DB)."""
+"""Schemas for candidate evaluation (LLM output + DB) for POST /candidates."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ CandidateProficiencyLevel = Literal[
     "basic",
     "intermediate",
     "advanced",
-    "experience",
+    "expert",
 ]
 
 _CANDIDATE_LEVELS: tuple[str, ...] = (
@@ -21,11 +21,11 @@ _CANDIDATE_LEVELS: tuple[str, ...] = (
     "basic",
     "intermediate",
     "advanced",
-    "experience",
+    "expert",
 )
 
 
-class RequirementLineEval(BaseModel):
+class CandidateEvalLine(BaseModel):
     """One row under a requirement section (skill vs JD vs assessed level)."""
 
     skill: str = Field(description="Subject/skill name from the job requirements.")
@@ -33,7 +33,7 @@ class RequirementLineEval(BaseModel):
     candidate: CandidateProficiencyLevel = Field(
         description=(
             "Assessed proficiency from the resume for this skill; exactly one of: "
-            "awareness, basic, intermediate, advanced, experience."
+            "awareness, basic, intermediate, advanced, expert."
         ),
     )
     rating: int = Field(ge=1, le=100, description="Score 1–100 for this line item.")
@@ -46,10 +46,11 @@ class RequirementLineEval(BaseModel):
             return "awareness"
         s = str(v).strip().lower()
         if s == "experince":
-            s = "experience"
+            s = "expert"
+        if s == "experience":
+            s = "expert"
         if s in _CANDIDATE_LEVELS:
             return s
-        # Long evidence-style strings from older prompts → lowest defensible bucket
         if len(s) > 50 or any(
             phrase in s
             for phrase in (
@@ -69,7 +70,7 @@ class RequirementLineEval(BaseModel):
         return "awareness"
 
 
-class RequirementsAlignedEvalOutput(BaseModel):
+class CandidatesEvalOutput(BaseModel):
     """Gemini JSON output for POST /candidates."""
 
     candidate_name: Optional[str] = None
@@ -77,7 +78,7 @@ class RequirementsAlignedEvalOutput(BaseModel):
     email: Optional[str] = None
     years_of_experience: Optional[float] = None
     present_role: Optional[str] = None
-    evaluations: dict[str, list[RequirementLineEval]] = Field(
+    evaluations: dict[str, list[CandidateEvalLine]] = Field(
         default_factory=dict,
         description='Keys = section titles from job Requirements (e.g. "Technical skills").',
     )

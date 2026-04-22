@@ -9,7 +9,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 # Which job_description columns go into the LLM prompt. Empty list => no job text from this helper.
-JD_PROMPT_FIELDS: list[str] = ["title", "description", "requirements"]
+JD_PROMPT_FIELDS: list[str] = ["title", "experience", "description", "requirements"]
 
 # Structured job requirements: section keys to omit from the prompt (e.g. "attitude_mindset").
 JD_REQUIREMENTS_SECTION_BLACKLIST: list[str] = ["attitude_mindset"]
@@ -344,14 +344,13 @@ def build_job_context_from_row(row: dict[str, Any]) -> str:
         lines: list[str] = []
         label_map = {
             "title": "Job Title",
-            "description": "Job description",
+            "description": "description",
             "requirements": "Requirements",
             "responsibilities": "Responsibilities",
             "department": "Department",
             "location": "Location",
             "status": "Status",
-            "min_experience": "Min experience (years)",
-            "max_experience": "Max experience (years)",
+            "experience": "Experience",
             "min_salary": "Min salary",
             "max_salary": "Max salary",
             "employment_type": "Employment type",

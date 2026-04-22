@@ -74,34 +74,73 @@ Rules:
 """
 
 
-# Requirements-aligned eval: JD context + resume (PDF or text) → structured JSON (see RequirementsAlignedEvalOutput).
-REQUIREMENTS_ALIGNED_EVAL_PROMPT = """
-You are an expert recruiter. Evaluate the candidate against the job context below.
+# Candidate eval (POST /candidates): JD context + resume PDF → structured JSON (see CandidatesEvalOutput).
+CANDIDATES_EVAL_PROMPT = """
+You are an expert technical recruiter. Evaluate the candidate's resume against the job
+description below.
 
+---
+JOB DESCRIPTION:
 {job_context}
+---
 
-{resume_instruction}
+The candidate's resume is attached as a PDF. Read the entire document carefully —
+work experience, projects, and listed skills — before scoring anything.
 
-Rules:
-- Extract candidate_name, phone, email, years_of_experience, and present_role from the resume (PDF or text). Use null if missing.
-- years_of_experience must be a JSON number (e.g. 4.5), not a string like "4+" or "5 years".
-- Under "Requirements", for each section that appears in the job context (e.g. Technical skills, Core competencies), use that EXACT section title as a JSON key under "evaluations".
-- For each row listed in the job requirement tables (each skill/subject line), output one object in the array for that section with: "skill" (subject text), "expected" (level or expectation from the JD), "candidate" (exactly one of these lowercase strings, based only on what the resume demonstrates for that skill: awareness, basic, intermediate, advanced, experience), "rating" (integer 1 to 100 for fit on that line). Do not put sentences or quotes in "candidate" — only one of the five level words.
-- Include every requirement row from the job Requirements section; do not omit sections that appear in the job context.
-- Omit sections that are not present in the job context, or that were not meant to be evaluated.
-- final_rating: 0–100 overall. final_verdict: short string (e.g. Strong Hire / Average / Reject). final_justification: one sentence.
+EXTRACTION RULES:
+- Extract candidate_name, phone, email, years_of_experience, and present_role.
+- Use null for any field not found in the resume.
+- years_of_experience must be a number (e.g. 4.5), not a string.
 
-Output strictly JSON only, no markdown fences, with this top-level shape:
+EVALUATION RULES:
+- Evaluate ONLY sections listed under "Requirements:" in the JD. Use EXACT section titles as keys.
+- For each requirement row output: skill, expected, candidate, rating.
+- If the JD targets freshers or entry-level, evaluate based on projects and declared skills;
+  internships are a strong positive signal.
+- Cross-reference: work experience (strongest) → projects → declared skills.
+
+  Levels (lowercase), relative to the candidate's experience stage:
+    awareness    → referenced, no usage evidence
+    basic        → coursework or minor exposure
+    intermediate → applied in projects; limited professional use
+    advanced     → professional/production use with clear impact
+    expert       → led or architected; deep domain ownership
+
+  A less experienced candidate can reach "intermediate" or "advanced" through strong
+  project evidence. Reserve "expert" for clear depth or leadership regardless of years.
+
+  rating (1–100): 85–100 meets/exceeds · 65–84 one level below · 40–64 two levels below ·
+  10–39 limited evidence · 1–9 no evidence
+
+- Do NOT include rows or sections from outside the "Requirements:" block.
+- Do NOT omit any row from any requirements table.
+- Do NOT add extra keys beyond those specified.
+
+FINAL ASSESSMENT:
+  final_rating        : integer 0–100, overall fit score across all requirements
+  final_verdict       : exactly one of — Strong Hire | Hire | Borderline | Reject
+  final_justification : one concise sentence explaining the verdict
+
+Output strictly valid JSON only. No markdown fences. No extra keys. No comments.
+Schema:
 {{
   "candidate_name": null,
   "phone": null,
   "email": null,
   "years_of_experience": null,
   "present_role": null,
-  "evaluations": {{ "Technical skills": [{{ "skill": "", "expected": "", "candidate": "intermediate", "rating": 0 }}] }},
+  "evaluations": {{
+    "<Exact Section Title>": [
+      {{
+        "skill": "",
+        "expected": "",
+        "candidate": "",
+        "rating": 0
+      }}
+    ]
+  }},
   "final_rating": 0,
   "final_verdict": "",
   "final_justification": ""
 }}
-Use the evaluations structure as shown; repeat keys and array entries as needed for all sections and rows from the job Requirements.
 """
