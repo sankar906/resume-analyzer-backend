@@ -3,26 +3,9 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Literal, Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator
-
-# Resume-assessed proficiency for this line (must match LLM prompt; lowercase in JSON).
-CandidateProficiencyLevel = Literal[
-    "awareness",
-    "basic",
-    "intermediate",
-    "advanced",
-    "expert",
-]
-
-_CANDIDATE_LEVELS: tuple[str, ...] = (
-    "awareness",
-    "basic",
-    "intermediate",
-    "advanced",
-    "expert",
-)
 
 
 class CandidateEvalLine(BaseModel):
@@ -30,44 +13,21 @@ class CandidateEvalLine(BaseModel):
 
     skill: str = Field(description="Subject/skill name from the job requirements.")
     expected: str = Field(description="Expected level/text from the job requirements.")
-    candidate: CandidateProficiencyLevel = Field(
+    candidate: str = Field(
         description=(
-            "Assessed proficiency from the resume for this skill; exactly one of: "
-            "awareness, basic, intermediate, advanced, expert."
+            "Assessed proficiency or evidence from the model for this line "
+            "(exactly one of - awareness | basic | intermediate | advanced | expert)."
         ),
     )
     rating: int = Field(ge=1, le=100, description="Score 1–100 for this line item.")
 
     @field_validator("candidate", mode="before")
     @classmethod
-    def normalize_candidate_level(cls, v: Any) -> str:
-        """Coerce casing/typos; map legacy free-text evidence to a level when obvious."""
+    def candidate_passthrough(cls, v: Any) -> str:
+        """Preserve model output; only normalize null."""
         if v is None:
-            return "awareness"
-        s = str(v).strip().lower()
-        if s == "experince":
-            s = "expert"
-        if s == "experience":
-            s = "expert"
-        if s in _CANDIDATE_LEVELS:
-            return s
-        if len(s) > 50 or any(
-            phrase in s
-            for phrase in (
-                "no explicit",
-                "no mention",
-                "not found",
-                "no evidence",
-                "does not mention",
-                "lack of",
-                "not demonstrated",
-            )
-        ):
-            return "awareness"
-        for level in _CANDIDATE_LEVELS:
-            if s == level.capitalize() or s == level.upper():
-                return level
-        return "awareness"
+            return ""
+        return str(v)
 
 
 class CandidatesEvalOutput(BaseModel):
@@ -83,7 +43,9 @@ class CandidatesEvalOutput(BaseModel):
         description='Keys = section titles from job Requirements (e.g. "Technical skills").',
     )
     final_rating: int = Field(ge=0, le=100, description="Overall score 0–100.")
-    final_verdict: str = Field(description="Short hiring verdict.")
+    final_verdict: str = Field(
+        description="Short hiring verdict. exactly one of — Strong Hire | Hire | Borderline | Reject"
+    )
     final_justification: str = Field(description="One-sentence justification.")
 
     @field_validator("years_of_experience", mode="before")

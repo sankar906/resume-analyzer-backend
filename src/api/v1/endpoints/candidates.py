@@ -17,13 +17,14 @@ from src.api.v1.endpoints.llm_gemini import (
     build_candidates_eval_prompt,
     run_candidates_eval_pdf,
 )
-from src.api.v1.endpoints.resume_evaluation import (
+from src.api.v1.endpoints.jd_fetch import (
     _jd_title_from_db_row,
     fetch_job_description_by_id,
 )
 from src.api.v1.endpoints.resume_info import (
-    RESUME_FOLDER,
     normalize_upload_to_pdf_bytes,
+    resolve_stored_resume_file,
+    resume_path_for_db_from_basename,
     safe_resume_filename,
     save_resume_pdf,
 )
@@ -357,6 +358,7 @@ async def list_candidate_evaluations(
             _candidate_row_as_list_endpoint(base, eval_by_cid.get(cid_s, []))
         )
 
+    logger.info("candidates GET /evaluations rows=%d", len(out_rows))
     return BaseResponse(
         success=True,
         message="Candidate evaluations retrieved successfully.",
@@ -432,6 +434,7 @@ async def list_candidates(
         cid = str(r.get("candidate_id", ""))
         r["all_evaluations"] = eval_by_cid.get(cid, [])
 
+    logger.info("candidates GET rows=%d limit=%d offset=%d", len(rows), limit, offset)
     return BaseResponse(
         success=True,
         message="Candidates retrieved successfully.",
@@ -486,16 +489,9 @@ async def _delete_candidates_rows(
 
 
 def _unlink_resume_if_safe(resume_path_val: Any) -> None:
-    """Remove stored PDF under RESUME_FOLDER when basename-only path is valid."""
-    if not resume_path_val or not str(resume_path_val).strip():
-        return
-    basename = Path(str(resume_path_val).strip()).name
-    if basename != str(resume_path_val).strip():
-        return
-    file_path = (RESUME_FOLDER / basename).resolve()
-    try:
-        file_path.relative_to(RESUME_FOLDER.resolve())
-    except ValueError:
+    """Remove stored PDF when ``resume_path`` resolves under ``RESUME_FOLDER``."""
+    file_path = resolve_stored_resume_file(resume_path_val)
+    if file_path is None:
         return
     try:
         if file_path.is_file():
@@ -536,6 +532,11 @@ async def delete_candidates(body: CandidateIdsDeleteBody):
     for row in rows:
         _unlink_resume_if_safe(row.get("resume_path"))
 
+    logger.info(
+        "candidates DELETE deleted=%d requested=%d",
+        len(rows),
+        len(parsed),
+    )
     return BaseResponse(
         success=True,
         message="Candidates deleted.",
@@ -614,6 +615,11 @@ async def candidates_eval(
             logger.exception("candidates eval: file save failed")
             raise HTTPException(status_code=500, detail=f"File save failed: {e}") from e
 
+        try:
+            resume_path_db = resume_path_for_db_from_basename(resume_basename)
+        except ValueError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+
         new_candidate_id = uuid.uuid4()
         try:
             cand_rows = await db_manager.execute_function(
@@ -625,7 +631,7 @@ async def candidates_eval(
                 out.email,
                 out.years_of_experience,
                 out.present_role,
-                resume_basename,
+                resume_path_db,
                 *_FN_CAND_TAIL6,
             )
         except Exception as e:
@@ -647,13 +653,19 @@ async def candidates_eval(
             _jd_title_for_eval_row(jd_row),
         )
 
+        logger.info(
+            "candidates POST eval new candidate_id=%s evaluation_id=%s jd_id=%s",
+            new_candidate_id,
+            evaluation_id,
+            jd_uuid,
+        )
         return BaseResponse(
             success=True,
             message="Candidate and requirements-aligned evaluation stored successfully.",
             data={
                 "candidate_id": str(new_candidate_id),
                 "evaluation_id": str(evaluation_id),
-                "resume_path": resume_basename,
+                "resume_path": resume_path_db,
                 "candidate_row": jsonable_encoder(dict(cand_rows[0])),
                 "evaluation_row": jsonable_encoder(
                     _evaluation_row_for_response(dict(run_rows[0]))
@@ -677,21 +689,15 @@ async def candidates_eval(
             detail="Candidate has no resume_path; cannot load PDF for re-evaluation.",
         )
 
-    basename = Path(str(rp).strip()).name
-    if basename != str(rp).strip():
+    file_path = resolve_stored_resume_file(str(rp))
+    if file_path is None:
         raise HTTPException(
             status_code=422, detail="Invalid resume_path on candidate row."
         )
-
-    file_path = (RESUME_FOLDER / basename).resolve()
-    try:
-        file_path.relative_to(RESUME_FOLDER.resolve())
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail="Invalid resume file path.") from e
     if not file_path.is_file():
         raise HTTPException(
             status_code=404,
-            detail=f"Resume file not found on disk: {basename}",
+            detail=f"Resume file not found on disk: {file_path.name}",
         )
 
     pdf_bytes = file_path.read_bytes()
@@ -713,13 +719,19 @@ async def candidates_eval(
         _jd_title_for_eval_row(jd_row),
     )
 
+    logger.info(
+        "candidates POST eval re-eval candidate_id=%s evaluation_id=%s jd_id=%s",
+        cand_uuid,
+        evaluation_id,
+        jd_uuid,
+    )
     return BaseResponse(
         success=True,
         message="Requirements-aligned evaluation stored successfully.",
         data={
             "candidate_id": cand_uuid,
             "evaluation_id": str(evaluation_id),
-            "resume_path": basename,
+            "resume_path": str(file_path),
             "evaluation_row": jsonable_encoder(
                 _evaluation_row_for_response(dict(run_rows[0]))
             ),

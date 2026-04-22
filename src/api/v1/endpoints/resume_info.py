@@ -7,7 +7,6 @@ import json
 import logging
 import re
 import uuid
-from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -26,8 +25,33 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 _FN = "public.fn_resume_info"
-_FN_EVAL = "public.fn_resume_evaluation"
 RESUME_FOLDER = Path("resume")
+
+
+def resume_path_for_db_from_basename(basename: str) -> str:
+    """Absolute path string for DB after saving under ``RESUME_FOLDER / basename``."""
+    raw = str(basename).strip()
+    if not raw or Path(raw).name != raw:
+        raise ValueError("resume_path must be a single filename (no directories).")
+    return str((RESUME_FOLDER / raw).resolve())
+
+
+def resolve_stored_resume_file(resume_path_val: Any) -> Path | None:
+    """Resolve DB ``resume_path`` to a file under ``RESUME_FOLDER`` (absolute or legacy basename)."""
+    if resume_path_val is None or not str(resume_path_val).strip():
+        return None
+    raw = str(resume_path_val).strip()
+    p = Path(raw).expanduser()
+    if p.is_absolute():
+        candidate = p.resolve()
+    else:
+        candidate = (RESUME_FOLDER / Path(raw).name).resolve()
+    try:
+        candidate.relative_to(RESUME_FOLDER.resolve())
+    except ValueError:
+        return None
+    return candidate
+
 
 # 5 MB is generous for a resume PDF; 10 MB hard cap
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024  # 5 MB
@@ -222,64 +246,6 @@ def _skills_arg(skills_json: str | None) -> Any:
     return parsed
 
 
-async def _evaluations_by_resume_id(resume_ids: list[str]) -> dict[str, list[dict[str, Any]]]:
-    """Load evaluations for many resumes in one fn_resume_evaluation (mode 2) call."""
-    if not resume_ids:
-        return {}
-    try:
-        eval_rows = await db_manager.execute_function(
-            _FN_EVAL,
-            2,
-            None,
-            None,
-            None,
-            0,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            resume_ids,
-            None,
-        )
-    except Exception:
-        logger.exception("_evaluations_by_resume_id failed")
-        raise
-    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for ev in eval_rows:
-        rid = ev.get("resume_id")
-        if rid is not None:
-            grouped[str(rid)].append(ev)
-    return dict(grouped)
-
-
-async def _delete_evaluations_for_resume_ids(resume_ids: list[str]) -> list[dict[str, Any]]:
-    """fn_resume_evaluation mode 4: delete rows whose resume_id is in the list (same args as resume-evaluation DELETE)."""
-    if not resume_ids:
-        return []
-    return await db_manager.execute_function(
-        _FN_EVAL,
-        4,
-        None,
-        None,
-        None,
-        0,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        resume_ids,
-        None,
-    )
-
-
 async def fetch_resume_info_by_resume_ids(
     resume_ids: list[str],
 ) -> list[dict[str, Any]]:
@@ -369,18 +335,10 @@ async def list_resume_info(
         logger.warning("resume-info GET failed: %s", e)
         raise HTTPException(status_code=500, detail=str(e)) from e
 
-    resume_ids_batch = [str(r["resume_id"]) for r in rows if r.get("resume_id") is not None]
-    try:
-        eval_by_resume = await _evaluations_by_resume_id(resume_ids_batch)
-    except Exception as e:
-        logger.warning("resume-info GET: evaluations fetch failed: %s", e)
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
     items: list[dict[str, Any]] = []
     for r in rows:
-        rid = str(r["resume_id"]) if r.get("resume_id") is not None else None
         item = dict(r)
-        item["evaluations"] = eval_by_resume.get(rid, []) if rid else []
+        item["evaluations"] = []
         items.append(jsonable_encoder(item))
 
     return BaseResponse(
@@ -394,17 +352,8 @@ async def list_resume_info(
 
 @router.delete("", response_model=BaseResponse)
 async def delete_resume_info(body: DeleteResumeInfoBody):
-    """Bulk-delete resume_info rows by resume_id (fn_resume_info mode 4).
-
-    Deletes matching ``resume_evaluation`` rows first so evaluations are not left orphaned.
-    """
+    """Bulk-delete resume_info rows by resume_id (fn_resume_info mode 4)."""
     ids = [str(x) for x in body.resume_ids]
-    try:
-        await _delete_evaluations_for_resume_ids(ids)
-    except Exception as e:
-        logger.warning("resume-info DELETE: cascade resume_evaluation failed: %s", e)
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
     try:
         rows = await db_manager.execute_function(
             _FN,
@@ -461,7 +410,12 @@ async def extract_resume(
         raise HTTPException(status_code=500, detail=f"File save failed: {e}") from e
 
     try:
-        row = await insert_resume_info(resume_uuid, info, resume_path)
+        resume_path_db = resume_path_for_db_from_basename(resume_path)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+
+    try:
+        row = await insert_resume_info(resume_uuid, info, resume_path_db)
     except Exception as e:
         logger.warning("resume-info/extract: db insert failed: %s", e)
         raise HTTPException(status_code=500, detail=f"DB insert failed: {e}") from e
@@ -477,7 +431,7 @@ async def extract_resume(
         message="Resume extracted and stored successfully.",
         data={
             "resume_id": str(row["resume_id"]),
-            "resume_path": resume_path,
+            "resume_path": resume_path_db,
             "extracted_data": info.model_dump(mode="json"),
         },
     )

@@ -4,7 +4,7 @@ from datetime import date
 from typing import List, Literal, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
 
 # --------------------------------------------------
@@ -142,89 +142,7 @@ class ResumeJobMatchOutput(BaseModel):
 
 
 # --------------------------------------------------
-# Request model for evaluate endpoint
-# --------------------------------------------------
-
-_RESUME_INLINE_FIELD_NAMES = frozenset(
-    {
-        "name",
-        "phone",
-        "location",
-        "linkedin",
-        "summary",
-        "total_experience_years",
-        "current_role",
-        "skills",
-        "experience",
-        "education",
-        "projects",
-        "certifications",
-        "languages",
-    }
-)
-
-
-def is_substantive_resume_inline_dict(d: object) -> bool:
-    """
-    True only if the dict looks like a real resume payload (ResumeInfo-shaped).
-    Swagger/OpenAPI placeholders like {\"additionalProp1\": {}} are not substantive.
-    """
-    if not isinstance(d, dict) or not d:
-        return False
-    for key in _RESUME_INLINE_FIELD_NAMES:
-        if key not in d:
-            continue
-        val = d[key]
-        if val is None:
-            continue
-        if isinstance(val, str) and not val.strip():
-            continue
-        if isinstance(val, (list, dict)) and len(val) == 0:
-            continue
-        return True
-    return False
-
-
-class EvaluateRequest(BaseModel):
-    jd_id: str = Field(description="Job description UUID from job_description.")
-    resume_id: Optional[str] = Field(
-        default=None,
-        description="Resume UUID from resume_info. If set (non-empty), candidate data is always "
-        "loaded from the database; extracted_resume_json is ignored.",
-    )
-    extracted_resume_json: Optional[dict] = Field(
-        default=None,
-        description="Inline resume (ResumeInfo-shaped). Used only when resume_id is omitted; "
-        "ignored whenever resume_id is present.",
-    )
-    resume_path: Optional[str] = Field(
-        default=None,
-        description="File path for inline resume when resume_id is omitted; optional when loading by resume_id.",
-    )
-
-    @model_validator(mode="after")
-    def resume_source(self) -> "EvaluateRequest":
-        rid = (self.resume_id or "").strip()
-        if rid:
-            # resume_id has priority: DB load; do not require resume_path or substantive JSON.
-            return self
-        j = self.extracted_resume_json
-        has_inline = j is not None and is_substantive_resume_inline_dict(j)
-        if has_inline:
-            if not (self.resume_path and str(self.resume_path).strip()):
-                raise ValueError(
-                    "resume_path is required when using inline resume without resume_id."
-                )
-        else:
-            raise ValueError(
-                "Provide resume_id to load from DB, or omit resume_id and send "
-                "substantive extracted_resume_json with resume_path."
-            )
-        return self
-
-
-# --------------------------------------------------
-# DELETE request bodies (fn_resume_info / fn_resume_evaluation / fn_resume_job_match mode 4)
+# DELETE request bodies (fn_resume_info / fn_resume_job_match mode 4)
 # --------------------------------------------------
 
 
@@ -254,25 +172,3 @@ class PromoteFromMatchBody(BaseModel):
     match_id: UUID = Field(
         description="resume_job_match.match_id from a prior POST /resume-job-match."
     )
-
-
-class DeleteResumeEvaluationBody(BaseModel):
-    """Delete resume_evaluation rows (SQL mode 4). Use non-empty id arrays only (OR semantics).
-
-    Pass a single id as a one-element list, e.g. {\"resume_ids\": [\"<uuid>\"]}.
-    """
-
-    resume_ev_ids: list[UUID] | None = None
-    resume_ids: list[UUID] | None = None
-    jd_ids: list[UUID] | None = None
-
-    @model_validator(mode="after")
-    def at_least_one_non_empty_list(self):
-        has_ev = bool(self.resume_ev_ids and len(self.resume_ev_ids) > 0)
-        has_r = bool(self.resume_ids and len(self.resume_ids) > 0)
-        has_jd = bool(self.jd_ids and len(self.jd_ids) > 0)
-        if not (has_ev or has_r or has_jd):
-            raise ValueError(
-                "Provide at least one non-empty array: resume_ev_ids, resume_ids, or jd_ids."
-            )
-        return self

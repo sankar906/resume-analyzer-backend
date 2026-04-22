@@ -18,17 +18,20 @@ from src.api.v1.endpoints.llm_gemini import (
     run_evaluation,
     run_resume_job_match_pdf,
 )
-from src.api.v1.endpoints.resume_evaluation import (
+from src.api.v1.endpoints.jd_fetch import (
     _jd_title_from_db_row,
-    _resume_info_row_to_eval_payload,
     fetch_job_description_by_id,
+)
+from src.api.v1.endpoints.resume_eval_db import (
+    _resume_info_row_to_eval_payload,
     insert_evaluation,
 )
 from src.api.v1.endpoints.resume_info import (
-    RESUME_FOLDER,
     fetch_resume_info_by_resume_ids,
     insert_resume_info,
     normalize_upload_to_pdf_bytes,
+    resolve_stored_resume_file,
+    resume_path_for_db_from_basename,
     safe_resume_filename,
     save_resume_pdf,
 )
@@ -150,15 +153,6 @@ async def insert_resume_job_match_row(
     if not rows:
         raise RuntimeError("fn_resume_job_match insert returned no rows.")
     return dict(rows[0])
-
-
-def _resume_basename_safe(resume_path: str | None) -> str:
-    rp = (resume_path or "").strip()
-    if not rp:
-        raise HTTPException(status_code=422, detail="Job match has no resume_path.")
-    if Path(rp).name != rp:
-        raise HTTPException(status_code=422, detail="Invalid resume_path on job match row.")
-    return rp
 
 
 async def fetch_job_match_by_match_id(match_id: uuid.UUID) -> dict[str, Any]:
@@ -291,6 +285,11 @@ async def match_resume_to_jobs(
         raise HTTPException(status_code=500, detail=f"File save failed: {e}") from e
 
     try:
+        resume_path_db = resume_path_for_db_from_basename(resume_path)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+
+    try:
         raw_out = await run_resume_job_match_pdf(pdf_bytes, prompt)
     except Exception as e:
         logger.exception("resume-job-match: Gemini failed")
@@ -305,7 +304,7 @@ async def match_resume_to_jobs(
     preferred_jd = resolve_preferred_jd_id(preferred, jd_rows)
 
     try:
-        row = await insert_resume_job_match_row(resume_path, out, jd_ids, preferred_jd)
+        row = await insert_resume_job_match_row(resume_path_db, out, jd_ids, preferred_jd)
     except Exception as e:
         logger.exception("resume-job-match: DB insert failed")
         raise HTTPException(status_code=500, detail=f"DB insert failed: {e}") from e
@@ -313,7 +312,7 @@ async def match_resume_to_jobs(
     mid = row.get("match_id")
     data = {
         "match_id": str(mid) if mid is not None else None,
-        "resume_path": resume_path,
+        "resume_path": resume_path_db,
         "name": row.get("name"),
         "email": row.get("email"),
         "phone": row.get("phone"),
@@ -337,12 +336,15 @@ async def match_resume_to_jobs(
 async def promote_job_match_to_resume_info_and_evaluate(body: PromoteFromMatchBody):
     """
     Load a stored job match by match_id, re-extract the PDF from disk (no new save),
-    insert resume_info, then evaluate against preferred_jd_id (same logic as
-    /resume-info/extract + /resume-evaluation/evaluate).
+    insert resume_info, then evaluate against preferred_jd_id (Gemini + DB row).
     """
     match_uuid = uuid.UUID(str(body.match_id))
     m = await fetch_job_match_by_match_id(match_uuid)
-    rp = _resume_basename_safe(m.get("resume_path"))
+    file_path = resolve_stored_resume_file(m.get("resume_path"))
+    if file_path is None:
+        raise HTTPException(
+            status_code=422, detail="Invalid resume_path on job match row."
+        )
 
     pref = m.get("preferred_jd_id")
     if pref is None:
@@ -352,15 +354,10 @@ async def promote_job_match_to_resume_info_and_evaluate(body: PromoteFromMatchBo
         )
     jd_id_str = str(pref)
 
-    file_path = (RESUME_FOLDER / rp).resolve()
-    try:
-        file_path.relative_to(RESUME_FOLDER.resolve())
-    except ValueError:
-        raise HTTPException(status_code=422, detail="Invalid resume file path.") from None
     if not file_path.is_file():
         raise HTTPException(
             status_code=404,
-            detail=f"Resume file not found: {rp}",
+            detail=f"Resume file not found: {file_path.name}",
         )
 
     pdf_bytes = file_path.read_bytes()
@@ -372,7 +369,7 @@ async def promote_job_match_to_resume_info_and_evaluate(body: PromoteFromMatchBo
 
     resume_uuid = uuid.uuid4()
     try:
-        info_row = await insert_resume_info(resume_uuid, info, rp)
+        info_row = await insert_resume_info(resume_uuid, info, str(file_path))
     except Exception as e:
         logger.exception("resume-job-match/promote: resume_info insert failed")
         raise HTTPException(status_code=500, detail=f"DB insert failed: {e}") from e
@@ -434,7 +431,7 @@ async def promote_job_match_to_resume_info_and_evaluate(body: PromoteFromMatchBo
             {
                 "match_id": str(match_uuid),
                 "resume_id": resume_id_str,
-                "resume_path": rp,
+                "resume_path": str(file_path),
                 "evaluation_id": str(ev_row["resume_ev_id"]),
                 "extracted_data": info.model_dump(mode="json"),
                 "evaluation": eval_out.model_dump(mode="json"),

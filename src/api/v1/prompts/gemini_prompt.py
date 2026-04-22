@@ -100,8 +100,8 @@ EVALUATION RULES:
 - Cross-reference: work experience (strongest) → projects → declared skills.
 
   Levels (lowercase), relative to the candidate's experience stage:
-    awareness    → referenced, no usage evidence
-    basic        → coursework or minor exposure
+    awareness    → referenced, no usage evidence (very low)
+    basic        → coursework or minor exposure (low)
     intermediate → applied in projects; limited professional use
     advanced     → professional/production use with clear impact
     expert       → led or architected; deep domain ownership
@@ -109,7 +109,7 @@ EVALUATION RULES:
   A less experienced candidate can reach "intermediate" or "advanced" through strong
   project evidence. Reserve "expert" for clear depth or leadership regardless of years.
 
-  rating (1–100): 85–100 meets/exceeds · 65–84 one level below · 40–64 two levels below ·
+  rating (1–100): 90–100 meets/exceeds · 75–90 one level below · 40–74 two levels below ·
   10–39 limited evidence · 1–9 no evidence
 
 - Do NOT include rows or sections from outside the "Requirements:" block.

@@ -16,6 +16,7 @@ venv/
 env/
 
 # Environment and secrets
+.env.example
 .env
 .env.local
 .env.*.local
@@ -31,6 +32,7 @@ htmlcov/
 # IDE / OS
 .idea/
 .vscode/
+.cursor/
 *.swp
 *~
 .DS_Store
@@ -46,9 +48,14 @@ resume/
 
 # Local / generated folders
 jd&resumes/
+JD&Resumes/
 output/
 output_evalute/
 tests/
+
+# Local scratch / one-off files (root)
+prompts.py
+aaa.json
 
 # Text files (keep dependency manifest)
 *.txt

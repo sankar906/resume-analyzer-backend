@@ -48,6 +48,7 @@ async def get_jobs(
         logger.exception("get_jobs failed")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
+    logger.info("job_description GET uuid=%s rows=%d", job_uuid, len(rows))
     return BaseResponse(
         message="Job descriptions retrieved successfully",
         data=_wrap(rows),
@@ -70,6 +71,11 @@ async def create_job(body: JobDescriptionCreate) -> BaseResponse:
         logger.exception("create_job failed")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
+    if rows:
+        logger.info(
+            "job_description POST jd_id=%s",
+            rows[0].get("jd_id"),
+        )
     return BaseResponse(
         message="Job description created successfully",
         data=_wrap(rows),
@@ -93,6 +99,7 @@ async def update_job(job_uuid: UUID, body: JobDescriptionUpdate) -> BaseResponse
     if not rows:
         raise HTTPException(status_code=404, detail="Job not found")
 
+    logger.info("job_description PUT jd_id=%s", job_uuid)
     return BaseResponse(
         message="Job description updated successfully",
         data=_wrap(rows),
@@ -115,6 +122,7 @@ async def delete_job(job_uuid: UUID) -> BaseResponse:
     if not rows:
         raise HTTPException(status_code=404, detail="Job not found")
 
+    logger.info("job_description DELETE jd_id=%s", job_uuid)
     return BaseResponse(
         message="Job description deleted successfully",
         data=_wrap(rows),
